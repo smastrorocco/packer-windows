@@ -1,0 +1,139 @@
+{
+    "variables": {
+        "version": "0.1.0",
+        "virtualbox_iso_url": "http://care.dlservice.microsoft.com/dl/download/6/2/A/62A76ABB-9990-4EFC-A4FE-C7D698DAEB96/9600.17050.WINBLUE_REFRESH.140317-1640_X64FRE_SERVER_EVAL_EN-US-IR3_SSS_X64FREE_EN-US_DV9.ISO",
+        "virtualbox_iso_checksum": "c16ca71c0a0afb8a884bb7b14f2b5784dfa337a9ccc750eeaf96451dd6167d6979014e3f993701a6df4b8a2d419b1b1a50cb8be3e21e2888e828bf6d9d365428",
+        "virtualbox_iso_checksum_type": "sha512",
+        "virtualbox_guest_additions_url": "C:\\Program Files\\Oracle\\VirtualBox\\VBoxGuestAdditions.iso",
+        "virtualbox_guest_additions_sha256": "7b3642886c4517ffab63adb5ab27c9f02ce1eaac10d2dc9100d4c64a6cf4f7a9",
+        "virtualbox_headless": "true",
+        "virtualbox_keep_registered": "false",
+        "virtualbox_skip_export": "false"
+    },
+    "builders": [
+        {
+            "type": "virtualbox-iso",
+            "name": "virtualbox-windows-server-2012r2-standard-v{{user `version`}}",
+            "iso_url": "{{user `virtualbox_iso_url`}}",
+            "iso_checksum": "{{user `virtualbox_iso_checksum`}}",
+            "iso_checksum_type": "{{user `virtualbox_iso_checksum_type`}}",
+            "guest_os_type": "Windows2012_64",
+            "vboxmanage": [
+                [
+                    "modifyvm",
+                    "{{.Name}}",
+                    "--cpus",
+                    "2"
+                ],
+                [
+                    "modifyvm",
+                    "{{.Name}}",
+                    "--memory",
+                    "4096"
+                ],
+                [
+                    "modifyvm",
+                    "{{.Name}}",
+                    "--vram",
+                    "128"
+                ]
+            ],
+            "disk_size": 51200,
+            "hard_drive_interface": "sata",
+            "guest_additions_mode": "attach",
+            "guest_additions_url": "{{user `virtualbox_guest_additions_url`}}",
+            "guest_additions_sha256": "{{user `virtualbox_guest_additions_sha256`}}",
+            "floppy_files": [
+                "answer_files/Autounattend.xml",
+                "answer_files/Unattend.xml",
+                "scripts/configure_winrm.ps1",
+                "scripts/sysprep.ps1"
+            ],
+            "headless": "{{user `virtualbox_headless`}}",
+            "keep_registered": "{{user `virtualbox_keep_registered`}}",
+            "skip_export": "{{user `virtualbox_skip_export`}}",
+            "shutdown_command": "powershell.exe -File A:\\sysprep.ps1",
+            "shutdown_timeout": "1h",
+            "communicator": "winrm",
+            "winrm_username": "vagrant",
+            "winrm_password": "vagrant",
+            "winrm_timeout": "1h",
+            "winrm_port": 5986,
+            "winrm_use_ntlm": true,
+            "winrm_use_ssl": true,
+            "winrm_insecure": true
+        }
+    ],
+    "provisioners": [
+        {
+            "type": "powershell",
+            "scripts": [
+                "scripts/setup.ps1",
+                "scripts/install_vbox_guest_additions.ps1"
+            ]
+        },
+        {
+            "type": "windows-restart",
+            "restart_timeout": "1h"
+        },
+        {
+            "type": "powershell",
+            "scripts": [
+                "scripts/install_wmf5.1.ps1",
+                "scripts/disable_ipv6.ps1"
+            ],
+            "elevated_user": "vagrant",
+            "elevated_password": "vagrant",
+            "valid_exit_codes": [
+                0,
+                3010
+            ]
+        },
+        {
+            "type": "windows-restart",
+            "restart_timeout": "1h"
+        },
+        {
+            "type": "powershell",
+            "scripts": [
+                "scripts/configure_lcm.ps1",
+                "scripts/install_updates.ps1"
+            ],
+            "elevated_user": "vagrant",
+            "elevated_password": "vagrant"
+        },
+        {
+            "type": "windows-restart",
+            "restart_timeout": "1h"
+        },
+        {
+            "type": "powershell",
+            "script": "scripts/install_updates.ps1",
+            "elevated_user": "vagrant",
+            "elevated_password": "vagrant"
+        },
+        {
+            "type": "windows-restart",
+            "restart_timeout": "1h"
+        },
+        {
+            "type": "powershell",
+            "scripts": [
+                "scripts/install_chefclient.ps1",
+                "scripts/copy_sxs.ps1",
+                "scripts/cleanup.ps1",
+                "scripts/sysprep.ps1"
+            ],
+            "elevated_user": "vagrant",
+            "elevated_password": "vagrant"
+        }
+    ],
+    "post-processors": [
+        {
+            "type": "vagrant",
+            "keep_input_artifact": false,
+            "output": "windows-server-2012r2-standard-{{.Provider}}.box",
+            "vagrantfile_template": "vagrant_files/Vagrantfile"
+        }
+    ]
+}
