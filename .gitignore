@@ -3,3 +3,12 @@ packer_cache/
 
 # For built boxes
 *.box
+*.vdi
+*.ova
+*.ovf
+*.vhd
+*.vhdx
+*.vmdk
+
+# Log files
+*.log
