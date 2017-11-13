@@ -121,8 +121,7 @@
             "scripts": [
                 "scripts/install_chefclient.ps1",
                 "scripts/copy_sxs.ps1",
-                "scripts/cleanup.ps1",
-                "scripts/sysprep.ps1"
+                "scripts/cleanup.ps1"
             ],
             "elevated_user": "vagrant",
             "elevated_password": "vagrant"
