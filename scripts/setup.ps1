@@ -9,3 +9,7 @@ Write-Host "Enabling RDP"
 New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server" `
     -Name "fDenyTSConnections" -PropertyType "DWord" -Value 0 -Confirm:$false `
     -Force | Out-Null
+
+# Open RDP port in firewall
+Write-Host "Enable Remote Desktop firewall rule"
+Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
