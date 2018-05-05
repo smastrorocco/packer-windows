@@ -13,3 +13,7 @@ New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server" 
 # Open RDP port in firewall
 Write-Host "Enable Remote Desktop firewall rule"
 Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+
+# Create SetupComplete directory
+Write-Host "Creating Scripts directory for SetupComplete.cmd"
+New-Item "$($env:windir)\Setup\Scripts" -ItemType Directory -Force -Confirm:$false | Out-Null
